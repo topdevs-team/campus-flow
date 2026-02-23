@@ -52,6 +52,23 @@ Run the SQL scripts in order in your Supabase SQL Editor:
 
 ---
 
+<<<<<<< Gowreesh
+## LaTeX Deployment (Vercel + Render)
+
+Resume PDF compile/preview can run in hybrid mode:
+- App/UI/auth APIs on Vercel
+- LaTeX compile worker endpoint on Render
+
+### Environment variables
+
+Add these to Vercel and Render as needed:
+
+```env
+# Optional local override for compiler path when compiling locally
+LATEX_BIN=/Library/TeX/texbin/pdflatex
+
+# If set, resume compile/preview routes offload LaTeX compilation to this base URL
+=======
 ## Resume LaTeX Preview/Download Setup
 
 Resume PDF endpoints:
@@ -82,6 +99,7 @@ LATEX_BIN_PDFLATEX=/Library/TeX/texbin/pdflatex
 LATEX_BIN_XELATEX=/Library/TeX/texbin/xelatex
 
 # If set, resume compile/preview routes offload compilation to Render
+>>>>>>> main
 # Example: https://campus-flow-render.onrender.com
 LATEX_RENDER_URL=
 
@@ -89,6 +107,19 @@ LATEX_RENDER_URL=
 # Defaults to {LATEX_RENDER_URL}/api/latex/compile
 LATEX_RENDER_COMPILE_URL=
 
+<<<<<<< Gowreesh
+# Shared secret between Vercel and Render compile endpoint
+LATEX_RENDER_SECRET=
+```
+
+### Side-by-side setup
+
+1. Deploy app to Render with TeX installed (`pdflatex` available).
+2. Keep `/api/latex/compile` reachable on Render.
+3. Set `LATEX_RENDER_SECRET` on both deployments.
+4. Set `LATEX_RENDER_URL` on Vercel to the Render deployment URL.
+5. Do **not** set `LATEX_RENDER_URL` on Render itself (so Render compiles locally and avoids proxy loops).
+=======
 # Shared secret between app and compile endpoint
 LATEX_RENDER_SECRET=
 ```
@@ -126,6 +157,7 @@ Steps:
 
 - `Failed to compile LaTeX`
   - Usually template syntax/package/font issue. Check API error `detail` field.
+>>>>>>> main
 
 ---
 
