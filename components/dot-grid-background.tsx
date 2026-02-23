@@ -7,7 +7,7 @@ export default function DotGridBackground() {
     <div className="fixed inset-0 -z-10 bg-white">
       <DotGrid
         dotSize={2}
-        gap={23}
+        gap={25}
         baseColor="#c0c0c0"
         activeColor="#888888"
         proximity={130}
