@@ -103,7 +103,8 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply text-foreground;
+    background: transparent;
     font-family: 'Helvetica Neue', 'Inter', sans-serif;
   }
 }
