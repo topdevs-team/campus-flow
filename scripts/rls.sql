@@ -17,21 +17,28 @@ ALTER TABLE embeddings   ENABLE ROW LEVEL SECURITY;
 -- ============================================================
 -- Drop existing policies (clean slate)
 -- ============================================================
-DROP POLICY IF EXISTS "Users can view their own profile"        ON users;
-DROP POLICY IF EXISTS "Users can update their own profile"      ON users;
-DROP POLICY IF EXISTS "Users can insert their own profile"      ON users;
-DROP POLICY IF EXISTS "Users can delete their own profile"      ON users;
+DROP POLICY IF EXISTS "Users can view their own profile"               ON users;
+DROP POLICY IF EXISTS "Authenticated users can view all profiles"      ON users;
+DROP POLICY IF EXISTS "Users can update their own profile"             ON users;
+DROP POLICY IF EXISTS "Users can insert their own profile"             ON users;
+DROP POLICY IF EXISTS "Users can delete their own profile"             ON users;
 
-DROP POLICY IF EXISTS "Users can view their own preferences"    ON preferences;
-DROP POLICY IF EXISTS "Users can view all preferences"          ON preferences;
-DROP POLICY IF EXISTS "Users can insert their own preferences"  ON preferences;
-DROP POLICY IF EXISTS "Users can update their own preferences"  ON preferences;
-DROP POLICY IF EXISTS "Users can delete their own preferences"  ON preferences;
+DROP POLICY IF EXISTS "Users can view their own preferences"           ON preferences;
+DROP POLICY IF EXISTS "Users can view all preferences"                 ON preferences;
+DROP POLICY IF EXISTS "Authenticated users can view all preferences"   ON preferences;
+DROP POLICY IF EXISTS "Users can insert their own preferences"         ON preferences;
+DROP POLICY IF EXISTS "Users can update their own preferences"         ON preferences;
+DROP POLICY IF EXISTS "Users can delete their own preferences"         ON preferences;
 
-DROP POLICY IF EXISTS "Users can view their own matches"        ON matches;
-DROP POLICY IF EXISTS "Authenticated users can insert matches"  ON matches;
+DROP POLICY IF EXISTS "Users can view their own matches"               ON matches;
+DROP POLICY IF EXISTS "Authenticated users can insert matches"         ON matches;
+
+DROP POLICY IF EXISTS "Authenticated users can upload notes"           ON storage.objects;
+DROP POLICY IF EXISTS "Authenticated users can view notes"             ON storage.objects;
+DROP POLICY IF EXISTS "Owners can delete their notes"                  ON storage.objects;
 
 DROP POLICY IF EXISTS "Users can view their own notes"          ON notes;
+DROP POLICY IF EXISTS "Authenticated users can view all notes"  ON notes;
 DROP POLICY IF EXISTS "Users can insert their own notes"        ON notes;
 DROP POLICY IF EXISTS "Users can update their own notes"        ON notes;
 DROP POLICY IF EXISTS "Users can delete their own notes"        ON notes;
@@ -118,11 +125,13 @@ CREATE POLICY "Authenticated users can insert matches"
 
 -- ============================================================
 -- NOTES
+-- All authenticated users can view notes (for Community Notes feature)
+-- Only owner can insert/update/delete
 -- ============================================================
-CREATE POLICY "Users can view their own notes"
+CREATE POLICY "Authenticated users can view all notes"
   ON notes FOR SELECT
   TO authenticated
-  USING (auth.uid() = user_id);
+  USING (true);
 
 CREATE POLICY "Users can insert their own notes"
   ON notes FOR INSERT
@@ -205,6 +214,24 @@ CREATE POLICY "Users can insert their own embeddings"
   ON embeddings FOR INSERT
   TO authenticated
   WITH CHECK (auth.uid() = user_id);
+
+-- ============================================================
+-- STORAGE: notes bucket
+-- ============================================================
+CREATE POLICY "Authenticated users can upload notes"
+  ON storage.objects FOR INSERT
+  TO authenticated
+  WITH CHECK (bucket_id = 'notes');
+
+CREATE POLICY "Authenticated users can view notes"
+  ON storage.objects FOR SELECT
+  TO authenticated
+  USING (bucket_id = 'notes');
+
+CREATE POLICY "Owners can delete their notes"
+  ON storage.objects FOR DELETE
+  TO authenticated
+  USING (bucket_id = 'notes' AND (storage.foldername(name))[1] = auth.uid()::text);
 
 -- ============================================================
 -- AUTO-CREATE user profile on signup (trigger)
