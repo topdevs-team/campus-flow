@@ -1,10 +1,11 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/lib/auth-context'
 import { Users, FileText, Ticket, FileCheck, MessageSquare, ArrowRight, BookOpen } from 'lucide-react'
+import { AuthModal } from '@/components/auth-modal'
 
 const features = [
   {
@@ -37,6 +38,11 @@ const features = [
 export default function Home() {
   const router = useRouter()
   const { user, loading } = useAuth()
+  const [modalOpen, setModalOpen] = useState(false)
+  const [modalTab, setModalTab] = useState<'signin' | 'signup'>('signin')
+
+  const openSignIn = () => { setModalTab('signin'); setModalOpen(true) }
+  const openSignUp = () => { setModalTab('signup'); setModalOpen(true) }
 
   useEffect(() => {
     if (!loading && user) {
@@ -69,18 +75,18 @@ export default function Home() {
             Campus Flow
           </Link>
           <div className="flex items-center gap-3">
-            <Link
-              href="/auth/signin"
+            <button
+              onClick={openSignIn}
               className="px-4 py-2 text-sm font-bold text-zinc-600 hover:text-black transition-colors"
             >
               Sign In
-            </Link>
-            <Link
-              href="/auth/signup"
+            </button>
+            <button
+              onClick={openSignUp}
               className="px-4 py-2 text-sm font-bold bg-black text-white hover:bg-zinc-800 transition-colors"
             >
               Get Started
-            </Link>
+            </button>
           </div>
         </div>
       </nav>
@@ -98,40 +104,47 @@ export default function Home() {
           Roommate matching, smart notes, AI-powered PDF chat, resume builder, and support tickets — all under one roof.
         </p>
         <div className="flex items-center justify-center gap-4 mt-10">
-          <Link
-            href="/auth/signup"
+          <button
+            onClick={openSignUp}
             className="flex items-center gap-2 px-6 py-3 bg-black text-white font-bold text-sm hover:bg-zinc-800 transition-colors"
           >
             Get Started Free <ArrowRight size={15} />
-          </Link>
-          <Link
-            href="/auth/signin"
+          </button>
+          <button
+            onClick={openSignIn}
             className="px-6 py-3 border-2 border-black text-black font-bold text-sm hover:bg-black hover:text-white transition-colors"
           >
             Sign In
-          </Link>
+          </button>
         </div>
       </section>
 
-      {/* ── Features ─────────────────────────────────── */}
-      <section className="pb-28 px-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-14">
-            <h2 className="text-4xl font-black text-black tracking-tight">Features</h2>
-            <p className="text-zinc-400 mt-3 text-sm uppercase tracking-widest font-bold">What you get with Campus Flow</p>
-            <div className="w-12 h-0.5 bg-black mx-auto mt-4" />
-          </div>
+      {/* ── Features Marquee ──────────────────────── */}
+      <section className="pb-28 overflow-hidden">
+        <div className="text-center mb-10">
+          <h2 className="text-4xl font-black text-black tracking-tight">Features</h2>
+          <p className="text-zinc-400 mt-3 text-sm uppercase tracking-widest font-bold">What you get with Campus Flow</p>
+          <div className="w-12 h-0.5 bg-black mx-auto mt-4" />
+        </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {features.map((f) => {
+        {/* Marquee — single row, scrolls left forever */}
+        <div className="relative flex overflow-hidden py-8 mask-[linear-gradient(to_right,transparent,black_8%,black_92%,transparent)]">
+          <div className="flex gap-6 animate-marquee-left items-center" style={{ width: 'max-content' }}>
+            {[...features, ...features, ...features, ...features].map((f, i) => {
               const Icon = f.icon
               return (
-                <div key={f.title} className="bw-card p-6">
-                  <div className="w-10 h-10 border border-zinc-200 rounded-lg flex items-center justify-center mb-5">
-                    <Icon size={18} className="text-zinc-700" />
+                <div
+                  key={i}
+                  className="inline-flex flex-col gap-4 bg-white/80 backdrop-blur-sm border border-zinc-200 rounded-2xl p-7 shadow-sm"
+                  style={{ minWidth: '280px', transform: i % 2 === 0 ? 'translateY(-20px)' : 'translateY(20px)' }}
+                >
+                  <div className="w-12 h-12 border border-zinc-200 rounded-xl flex items-center justify-center bg-white shrink-0">
+                    <Icon size={22} className="text-zinc-700" />
                   </div>
-                  <h3 className="text-base font-bold text-black">{f.title}</h3>
-                  <p className="text-zinc-400 text-sm mt-2 leading-relaxed">{f.description}</p>
+                  <div>
+                    <p className="text-base font-bold text-black">{f.title}</p>
+                    <p className="text-sm text-zinc-400 leading-relaxed mt-1">{f.description}</p>
+                  </div>
                 </div>
               )
             })}
@@ -146,23 +159,73 @@ export default function Home() {
           <p className="text-zinc-400 mt-3 text-sm leading-relaxed max-w-md mx-auto">
             Create your free account and start using all Campus Flow features today.
           </p>
-          <Link
-            href="/auth/signup"
+          <button
+            onClick={openSignUp}
             className="inline-flex items-center gap-2 mt-8 px-8 py-3 bg-black text-white font-bold text-sm hover:bg-zinc-800 transition-colors"
           >
             Create Free Account <ArrowRight size={15} />
-          </Link>
+          </button>
         </div>
       </section>
 
       {/* ── Footer ───────────────────────────────────── */}
-      <footer className="border-t-2 border-zinc-200 py-8 px-6">
-        <div className="max-w-7xl mx-auto flex items-center justify-between text-xs text-zinc-400 font-bold uppercase tracking-widest">
-          <span>© 2026 Campus Flow. All rights reserved.</span>
-          <span>Do not copy without permission.</span>
+      <footer className="mt-8 border-t border-zinc-200 py-12 px-6 bg-white/60 backdrop-blur-sm">
+        <div className="max-w-5xl mx-auto">
+          {/* Top row */}
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-10">
+            {/* Brand */}
+            <Link href="/" className="flex items-center gap-2.5 font-black text-lg text-black tracking-tight">
+              <div className="w-8 h-8 bg-black flex items-center justify-center text-white font-black text-xs rounded-lg">
+                CF
+              </div>
+              Campus Flow
+            </Link>
+
+            {/* Nav links */}
+            <nav className="flex items-center gap-7 text-sm font-semibold text-zinc-500">
+              <button onClick={openSignIn} className="hover:text-black transition-colors">Sign In</button>
+              <button onClick={openSignUp} className="hover:text-black transition-colors">Get Started</button>
+              <Link href="/dashboard" className="hover:text-black transition-colors">Dashboard</Link>
+            </nav>
+
+            {/* Socials */}
+            <div className="flex items-center gap-3">
+              <a
+                href="https://github.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-9 h-9 flex items-center justify-center border border-zinc-200 rounded-xl bg-white hover:bg-black hover:border-black hover:text-white text-zinc-600 transition-all"
+                aria-label="GitHub"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+                </svg>
+              </a>
+              <a
+                href="mailto:hello@campusflow.app"
+                className="w-9 h-9 flex items-center justify-center border border-zinc-200 rounded-xl bg-white hover:bg-black hover:border-black hover:text-white text-zinc-600 transition-all"
+                aria-label="Email"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect width="20" height="16" x="2" y="4" rx="2"/>
+                  <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+                </svg>
+              </a>
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div className="h-px bg-zinc-200 mb-6" />
+
+          {/* Bottom row */}
+          <div className="flex flex-col md:flex-row items-center justify-between gap-2 text-xs text-zinc-400">
+            <span>© 2026 Campus Flow. All rights reserved.</span>
+            <span>Built for VIT students.</span>
+          </div>
         </div>
       </footer>
 
+      <AuthModal open={modalOpen} defaultTab={modalTab} onClose={() => setModalOpen(false)} />
     </div>
   )
 }
