@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/lib/auth-context'
+import { supabase } from '@/lib/supabase'
 import { Input } from '@/components/ui/input'
 import { Users, FileText, FileCheck, MessageSquare, Ticket } from 'lucide-react'
 
@@ -31,7 +32,18 @@ export default function SignIn() {
     setLoading(true)
     try {
       await signIn(email, password)
-      router.push('/dashboard')
+      // Fetch admin status directly after login
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const { data: profile } = await supabase
+          .from('users')
+          .select('is_admin')
+          .eq('id', user.id)
+          .single()
+        router.push(profile?.is_admin ? '/admin' : '/dashboard')
+      } else {
+        router.push('/dashboard')
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to sign in')
     } finally {
