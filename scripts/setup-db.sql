@@ -74,6 +74,21 @@ CREATE TABLE IF NOT EXISTS tickets (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Club recruitments (published by admins)
+CREATE TABLE IF NOT EXISTS club_recruitments (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  club_name TEXT NOT NULL,
+  deadline TIMESTAMP WITH TIME ZONE NOT NULL,
+  form_url TEXT NOT NULL,
+  departments TEXT[] DEFAULT '{}'::text[],
+  description TEXT,
+  status TEXT NOT NULL DEFAULT 'open',
+  created_by UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  CHECK (status IN ('open', 'closed'))
+);
+
 -- Resume data
 CREATE TABLE IF NOT EXISTS resumes (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -86,6 +101,8 @@ CREATE TABLE IF NOT EXISTS resumes (
   experience JSONB,
   education JSONB,
   skills TEXT[],
+  projects JSONB DEFAULT '[]'::jsonb,
+  template_id TEXT NOT NULL DEFAULT 'classic',
   certifications JSONB,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -117,6 +134,7 @@ ALTER TABLE preferences ENABLE ROW LEVEL SECURITY;
 ALTER TABLE matches ENABLE ROW LEVEL SECURITY;
 ALTER TABLE notes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE tickets ENABLE ROW LEVEL SECURITY;
+ALTER TABLE club_recruitments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE resumes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE pdfs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE embeddings ENABLE ROW LEVEL SECURITY;
@@ -173,6 +191,23 @@ CREATE POLICY "Users can view their own tickets"
 CREATE POLICY "Users can insert their own tickets"
   ON tickets FOR INSERT
   WITH CHECK (auth.uid() = user_id);
+
+-- Club recruitments RLS policies
+CREATE POLICY "Authenticated users can view club recruitments"
+  ON club_recruitments FOR SELECT
+  USING (true);
+
+CREATE POLICY "Publishers can insert club recruitments"
+  ON club_recruitments FOR INSERT
+  WITH CHECK (auth.uid() = created_by);
+
+CREATE POLICY "Publishers can update club recruitments"
+  ON club_recruitments FOR UPDATE
+  USING (auth.uid() = created_by);
+
+CREATE POLICY "Publishers can delete club recruitments"
+  ON club_recruitments FOR DELETE
+  USING (auth.uid() = created_by);
 
 -- Resumes RLS policies
 CREATE POLICY "Users can view their own resume"
