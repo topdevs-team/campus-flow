@@ -86,6 +86,8 @@ CREATE TABLE IF NOT EXISTS resumes (
   experience JSONB,
   education JSONB,
   skills TEXT[],
+  projects JSONB DEFAULT '[]'::jsonb,
+  template_id TEXT NOT NULL DEFAULT 'classic',
   certifications JSONB,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
