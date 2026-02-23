@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
 import { Button } from '@/components/ui/button'
-import { Users, FileText, Ticket, FileCheck, MessageSquare, LogOut } from 'lucide-react'
+import { Users, FileText, Ticket, FileCheck, LogOut } from 'lucide-react'
 
 export function Navbar() {
   const router = useRouter()
@@ -22,7 +22,6 @@ export function Navbar() {
     { href: '/dashboard/notes', label: 'Notes', icon: FileText },
     { href: '/dashboard/admin', label: 'Tickets', icon: Ticket },
     { href: '/dashboard/resume', label: 'Resume', icon: FileCheck },
-    { href: '/dashboard/chat', label: 'Chat', icon: MessageSquare },
   ]
 
   return (
