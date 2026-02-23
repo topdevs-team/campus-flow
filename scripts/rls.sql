@@ -10,6 +10,7 @@ ALTER TABLE preferences  ENABLE ROW LEVEL SECURITY;
 ALTER TABLE matches      ENABLE ROW LEVEL SECURITY;
 ALTER TABLE notes        ENABLE ROW LEVEL SECURITY;
 ALTER TABLE tickets      ENABLE ROW LEVEL SECURITY;
+ALTER TABLE club_recruitments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE resumes      ENABLE ROW LEVEL SECURITY;
 ALTER TABLE pdfs         ENABLE ROW LEVEL SECURITY;
 ALTER TABLE embeddings   ENABLE ROW LEVEL SECURITY;
@@ -46,6 +47,10 @@ DROP POLICY IF EXISTS "Users can delete their own notes"        ON notes;
 DROP POLICY IF EXISTS "Users can view their own tickets"        ON tickets;
 DROP POLICY IF EXISTS "Users can insert their own tickets"      ON tickets;
 DROP POLICY IF EXISTS "Users can update their own tickets"      ON tickets;
+DROP POLICY IF EXISTS "Authenticated users can view club recruitments" ON club_recruitments;
+DROP POLICY IF EXISTS "Publishers can insert club recruitments" ON club_recruitments;
+DROP POLICY IF EXISTS "Publishers can update club recruitments" ON club_recruitments;
+DROP POLICY IF EXISTS "Publishers can delete club recruitments" ON club_recruitments;
 
 DROP POLICY IF EXISTS "Users can view their own resume"         ON resumes;
 DROP POLICY IF EXISTS "Users can insert their own resume"       ON resumes;
@@ -165,6 +170,31 @@ CREATE POLICY "Users can update their own tickets"
   ON tickets FOR UPDATE
   TO authenticated
   USING (auth.uid() = user_id);
+
+-- ============================================================
+-- CLUB RECRUITMENTS
+-- Readable by all authenticated users.
+-- Mutable by publisher only.
+-- ============================================================
+CREATE POLICY "Authenticated users can view club recruitments"
+  ON club_recruitments FOR SELECT
+  TO authenticated
+  USING (true);
+
+CREATE POLICY "Publishers can insert club recruitments"
+  ON club_recruitments FOR INSERT
+  TO authenticated
+  WITH CHECK (auth.uid() = created_by);
+
+CREATE POLICY "Publishers can update club recruitments"
+  ON club_recruitments FOR UPDATE
+  TO authenticated
+  USING (auth.uid() = created_by);
+
+CREATE POLICY "Publishers can delete club recruitments"
+  ON club_recruitments FOR DELETE
+  TO authenticated
+  USING (auth.uid() = created_by);
 
 -- ============================================================
 -- RESUMES
