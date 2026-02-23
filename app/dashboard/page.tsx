@@ -2,7 +2,7 @@
 
 import { useAuth } from '@/lib/auth-context'
 import Link from 'next/link'
-import { Users, FileText, Ticket, FileCheck, MessageSquare, ArrowRight } from 'lucide-react'
+import { Users, FileText, Ticket, FileCheck, MessageSquare, ArrowRight, Building2 } from 'lucide-react'
 
 export default function Dashboard() {
   const { user } = useAuth()
@@ -34,6 +34,13 @@ export default function Dashboard() {
       description: 'Build and download your professional resume',
       icon: FileCheck,
       href: '/dashboard/resume',
+      color: 'bg-primary/10 text-primary',
+    },
+    {
+      title: 'Club Recruitments',
+      description: 'Track all active club openings, deadlines, and application forms',
+      icon: Building2,
+      href: '/dashboard/clubs',
       color: 'bg-primary/10 text-primary',
     },
     {
