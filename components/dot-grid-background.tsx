@@ -1,0 +1,24 @@
+'use client'
+
+import DotGrid from '@/src/components/DotGrid'
+
+export default function DotGridBackground() {
+  return (
+    <div className="fixed inset-0 -z-10 bg-white">
+      <DotGrid
+        dotSize={2}
+        gap={20}
+        baseColor="#cccccc"
+        activeColor="#000000"
+        proximity={130}
+        speedTrigger={80}
+        shockRadius={220}
+        shockStrength={5}
+        resistance={700}
+        returnDuration={1.5}
+        className="w-full h-full"
+        style={{ width: '100%', height: '100%' }}
+      />
+    </div>
+  )
+}
