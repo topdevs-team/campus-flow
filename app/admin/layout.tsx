@@ -9,6 +9,7 @@ import {
   Ticket,
   Users,
   FileText,
+  Building2,
   LogOut,
   Shield,
 } from 'lucide-react'
@@ -18,6 +19,7 @@ const adminNavItems = [
   { href: '/admin/users', label: 'Users', icon: Users },
   { href: '/admin/notes', label: 'Notes', icon: FileText },
   { href: '/admin/tickets', label: 'Tickets', icon: Ticket },
+  { href: '/admin/clubs', label: 'Club Recruitments', icon: Building2 },
 ]
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
