@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
+import { supabase } from '@/lib/supabase'
 import { LogoIcon } from '@/components/logo'
 import { X } from 'lucide-react'
 import { Input } from '@/components/ui/input'
@@ -65,8 +66,19 @@ export function AuthModal({ open, defaultTab = 'signin', onClose }: AuthModalPro
     setError(''); setLoading(true)
     try {
       await signIn(email, password)
-      onClose()
-      router.push('/dashboard')
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const { data: profile } = await supabase
+          .from('users')
+          .select('is_admin')
+          .eq('id', user.id)
+          .single()
+        onClose()
+        router.push(profile?.is_admin ? '/dashboard/admin' : '/dashboard')
+      } else {
+        onClose()
+        router.push('/dashboard')
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to sign in')
     } finally { setLoading(false) }
