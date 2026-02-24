@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-import { calculateSimilarity } from '@/lib/matching'
+import { calculateMatchResult, Preferences } from '@/lib/matching'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(request: NextRequest) {
@@ -37,52 +37,56 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ matches: [] })
     }
 
-    // Get all other users' preferences
+    // Get all other users' preferences in one query to avoid N+1 requests.
     const { data: allPrefs } = await supabase
       .from('preferences')
-      .select('user_id')
+      .select('*')
       .neq('user_id', user.id)
 
-    if (!allPrefs) {
+    if (!allPrefs || allPrefs.length === 0) {
       return NextResponse.json({ matches: [] })
     }
 
     // Calculate similarity scores
-    const matches = []
-    for (const otherPref of allPrefs) {
-      const { data: otherData } = await supabase
-        .from('preferences')
-        .select('*')
-        .eq('user_id', otherPref.user_id)
-        .single()
-
-      if (otherData) {
-        const score = calculateSimilarity(userPrefs, otherData)
-        matches.push({
-          user_id: otherPref.user_id,
-          score,
-        })
-      }
-    }
+    const matches = allPrefs
+      .map((otherPrefs) => {
+        const result = calculateMatchResult(userPrefs as Preferences, otherPrefs as Preferences)
+        return {
+          user_id: otherPrefs.user_id as string,
+          score: result.score,
+          breakdown: result.dimensions,
+        }
+      })
+      .filter((match) => match.score > 0)
 
     // Sort by similarity score
     matches.sort((a, b) => b.score - a.score)
+    const topScoredMatches = matches.slice(0, 10)
+    const topUserIds = topScoredMatches.map((match) => match.user_id)
 
-    // Get user details for top matches
-    const topMatches = await Promise.all(
-      matches.slice(0, 10).map(async (match) => {
-        const { data: userData } = await supabase
-          .from('users')
-          .select('*')
-          .eq('id', match.user_id)
-          .single()
+    if (topUserIds.length === 0) {
+      return NextResponse.json({ matches: [] })
+    }
 
+    // Fetch user details in one query.
+    const { data: usersData } = await supabase
+      .from('users')
+      .select('*')
+      .in('id', topUserIds)
+
+    const usersById = new Map((usersData || []).map((profile) => [profile.id, profile]))
+
+    const topMatches = topScoredMatches
+      .map((match) => {
+        const profile = usersById.get(match.user_id)
+        if (!profile) return null
         return {
-          ...userData,
+          ...profile,
           similarity_score: match.score,
+          match_breakdown: match.breakdown,
         }
       })
-    )
+      .filter(Boolean)
 
     return NextResponse.json({ matches: topMatches })
   } catch (error) {

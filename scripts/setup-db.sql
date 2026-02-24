@@ -30,6 +30,10 @@ CREATE TABLE IF NOT EXISTS preferences (
   pets BOOLEAN DEFAULT FALSE,
   guests_frequency TEXT,
   preferred_location TEXT,
+  study_style TEXT,
+  conflict_style TEXT,
+  routine_flexibility TEXT,
+  social_energy TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   UNIQUE(user_id)

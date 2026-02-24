@@ -350,9 +350,9 @@ export default function ResumePage() {
   }
 
   const templates: { id: TemplateId; label: string; desc: string; img: string }[] = [
-    { id: 'classic', label: 'Classic',  desc: 'Clean single-column layout. Timeless and ATS-friendly.', img: '/templates/classic.png' },
-    { id: 'compact', label: 'Compact',  desc: 'Two-column design with photo. Great for dense content.', img: '/templates/compact.png' },
-    { id: 'modern',  label: 'Modern',   desc: 'Bold header with accent colours. Stands out visually.', img: '/templates/modern.png' },
+    { id: 'classic', label: 'Classic', desc: 'Clean single-column layout. Timeless and ATS-friendly.', img: '/templates/classic.png' },
+    { id: 'modern', label: 'Modern', desc: 'Bold header with accent colours. Stands out visually.', img: '/templates/compact.png' },
+    { id: 'compact', label: 'Compact', desc: 'Two-column design with photo. Great for dense content.', img: '/templates/modern.png' },
   ]
 
   if (loading) {

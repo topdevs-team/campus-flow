@@ -2,7 +2,7 @@
 
 import { useAuth } from '@/lib/auth-context'
 import Link from 'next/link'
-import { Users, FileText, Ticket, FileCheck, MessageSquare, ArrowRight, Building2, NotebookText } from 'lucide-react'
+import { Users, FileText, Ticket, FileCheck, MessageSquare, ArrowRight, ArrowUpRight, Building2, NotebookText } from 'lucide-react'
 
 function getGreeting() {
   const h = new Date().getHours()

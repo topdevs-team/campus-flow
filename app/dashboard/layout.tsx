@@ -43,7 +43,7 @@ export default function DashboardLayout({
   return (
     <>
       <Navbar />
-      <main className="pt-16 min-h-screen">
+      <main className="pt-28 min-h-screen">
         {children}
       </main>
     </>
