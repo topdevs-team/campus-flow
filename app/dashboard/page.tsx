@@ -2,7 +2,7 @@
 
 import { useAuth } from '@/lib/auth-context'
 import Link from 'next/link'
-import { Users, FileText, Ticket, FileCheck, MessageSquare, ArrowRight, Building2 } from 'lucide-react'
+import { Users, FileText, Ticket, FileCheck, MessageSquare, ArrowRight, Building2, NotebookText } from 'lucide-react'
 
 export default function Dashboard() {
   const { user } = useAuth()
@@ -41,6 +41,13 @@ export default function Dashboard() {
       description: 'Track all active club openings, deadlines, and application forms',
       icon: Building2,
       href: '/dashboard/clubs',
+      color: 'bg-primary/10 text-primary',
+    },
+    {
+      title: 'Open Notebook',
+      description: 'Launch your local multi-model notebook workspace',
+      icon: NotebookText,
+      href: '/dashboard/notebook',
       color: 'bg-primary/10 text-primary',
     },
     {
