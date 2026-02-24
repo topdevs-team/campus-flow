@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useAuth } from '@/lib/auth-context'
 import { Users, FileText, Ticket, FileCheck, MessageSquare, ArrowRight, BookOpen } from 'lucide-react'
 import { AuthModal } from '@/components/auth-modal'
+import CardSwap, { Card } from '@/src/components/CardSwapWrapper'
 
 const features = [
   {
@@ -92,35 +93,64 @@ export default function Home() {
       </nav>
 
       {/* ── Hero ─────────────────────────────────────── */}
-      <section className="pt-40 pb-28 px-6 text-center">
-        <div className="inline-flex items-center gap-2 border border-zinc-200 bg-white px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest text-zinc-500 mb-8">
-          <BookOpen size={12} />
-          Built for campus life
-        </div>
-        <h1 className="text-6xl md:text-7xl font-black tracking-tight text-black leading-tight max-w-4xl mx-auto">
-          Everything you need<br />on campus, in one place
-        </h1>
-        <p className="mt-6 text-lg text-zinc-500 max-w-xl mx-auto leading-relaxed">
-          Roommate matching, smart notes, AI-powered PDF chat, resume builder, and support tickets — all under one roof.
-        </p>
-        <div className="flex items-center justify-center gap-4 mt-10">
-          <button
-            onClick={openSignUp}
-            className="flex items-center gap-2 px-6 py-3 bg-black text-white font-bold text-sm hover:bg-zinc-800 transition-colors"
-          >
-            Get Started Free <ArrowRight size={15} />
-          </button>
-          <button
-            onClick={openSignIn}
-            className="px-6 py-3 border-2 border-black text-black font-bold text-sm hover:bg-black hover:text-white transition-colors"
-          >
-            Sign In
-          </button>
+      <section className="pt-8 pb-24 px-6 overflow-hidden">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+
+          {/* Left — text */}
+          <div>
+            <div className="inline-flex items-center gap-2 border border-zinc-200 bg-white px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest text-zinc-500 mb-4">
+              <BookOpen size={12} />
+              Built for campus life
+            </div>
+            <h1 className="text-5xl md:text-6xl font-black tracking-tight text-black leading-tight">
+              Everything you need<br />on campus,<br />in one place
+            </h1>
+            <p className="mt-6 text-lg text-zinc-500 max-w-md leading-relaxed">
+              Roommate matching, smart notes, resume builder, and support tickets — all under one roof.
+            </p>
+            <div className="flex items-center gap-4 mt-10">
+              <button
+                onClick={openSignUp}
+                className="flex items-center gap-2 px-6 py-3 bg-black text-white font-bold text-sm hover:bg-zinc-800 transition-colors"
+              >
+                Get Started Free <ArrowRight size={15} />
+              </button>
+              <button
+                onClick={openSignIn}
+                className="px-6 py-3 border-2 border-black text-black font-bold text-sm hover:bg-black hover:text-white transition-colors"
+              >
+                Sign In
+              </button>
+            </div>
+          </div>
+
+          {/* Right — CardSwap */}
+          <div className="relative hidden lg:block" style={{ height: '660px', marginTop: '-89px' }}>
+            <CardSwap
+              width={640}
+              height={500}
+              cardDistance={50}
+              verticalDistance={60}
+              delay={4000}
+              pauseOnHover
+            >
+              <Card>
+                <img src="/hero/image-1.png" alt="Campus Flow screenshot 1" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '12px' }} />
+              </Card>
+              <Card>
+                <img src="/hero/image-2.png" alt="Campus Flow screenshot 2" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '12px' }} />
+              </Card>
+              <Card>
+                <img src="/hero/image-3.png" alt="Campus Flow screenshot 3" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '12px' }} />
+              </Card>
+            </CardSwap>
+          </div>
+
         </div>
       </section>
 
       {/* ── Features Marquee ──────────────────────── */}
-      <section className="pb-28 overflow-hidden">
+      <section className="pt-8 pb-28 overflow-hidden">
         <div className="text-center mb-10">
           <h2 className="text-4xl font-black text-black tracking-tight">Features</h2>
           <p className="text-zinc-400 mt-3 text-sm uppercase tracking-widest font-bold">What you get with Campus Flow</p>
