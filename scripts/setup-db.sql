@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS users (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   email TEXT UNIQUE NOT NULL,
   full_name TEXT,
+  is_admin BOOLEAN DEFAULT FALSE,
   major TEXT,
   year TEXT,
   bio TEXT,
@@ -191,6 +192,24 @@ CREATE POLICY "Users can view their own tickets"
 CREATE POLICY "Users can insert their own tickets"
   ON tickets FOR INSERT
   WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Admins can view all tickets"
+  ON tickets FOR SELECT
+  USING (
+    EXISTS (
+      SELECT 1 FROM users
+      WHERE users.id = auth.uid() AND users.is_admin = true
+    )
+  );
+
+CREATE POLICY "Admins can update all tickets"
+  ON tickets FOR UPDATE
+  USING (
+    EXISTS (
+      SELECT 1 FROM users
+      WHERE users.id = auth.uid() AND users.is_admin = true
+    )
+  );
 
 -- Club recruitments RLS policies
 CREATE POLICY "Authenticated users can view club recruitments"

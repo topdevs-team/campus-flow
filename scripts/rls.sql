@@ -15,6 +15,9 @@ ALTER TABLE resumes      ENABLE ROW LEVEL SECURITY;
 ALTER TABLE pdfs         ENABLE ROW LEVEL SECURITY;
 ALTER TABLE embeddings   ENABLE ROW LEVEL SECURITY;
 
+-- Ensure admin flag exists (safe on existing DBs)
+ALTER TABLE users ADD COLUMN IF NOT EXISTS is_admin BOOLEAN DEFAULT FALSE;
+
 -- ============================================================
 -- Drop existing policies (clean slate)
 -- ============================================================
@@ -47,6 +50,8 @@ DROP POLICY IF EXISTS "Users can delete their own notes"        ON notes;
 DROP POLICY IF EXISTS "Users can view their own tickets"        ON tickets;
 DROP POLICY IF EXISTS "Users can insert their own tickets"      ON tickets;
 DROP POLICY IF EXISTS "Users can update their own tickets"      ON tickets;
+DROP POLICY IF EXISTS "Admins can view all tickets"             ON tickets;
+DROP POLICY IF EXISTS "Admins can update all tickets"           ON tickets;
 DROP POLICY IF EXISTS "Authenticated users can view club recruitments" ON club_recruitments;
 DROP POLICY IF EXISTS "Publishers can insert club recruitments" ON club_recruitments;
 DROP POLICY IF EXISTS "Publishers can update club recruitments" ON club_recruitments;
@@ -170,6 +175,26 @@ CREATE POLICY "Users can update their own tickets"
   ON tickets FOR UPDATE
   TO authenticated
   USING (auth.uid() = user_id);
+
+CREATE POLICY "Admins can view all tickets"
+  ON tickets FOR SELECT
+  TO authenticated
+  USING (
+    EXISTS (
+      SELECT 1 FROM users
+      WHERE users.id = auth.uid() AND users.is_admin = true
+    )
+  );
+
+CREATE POLICY "Admins can update all tickets"
+  ON tickets FOR UPDATE
+  TO authenticated
+  USING (
+    EXISTS (
+      SELECT 1 FROM users
+      WHERE users.id = auth.uid() AND users.is_admin = true
+    )
+  );
 
 -- ============================================================
 -- CLUB RECRUITMENTS
