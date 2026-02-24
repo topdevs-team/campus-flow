@@ -32,6 +32,11 @@ Create a `.env.local` file in the root with the following:
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 OPENAI_API_KEY=your_openai_api_key
+
+# Optional model defaults for PDF Studio (chat/slides/voice/video)
+CHAT_TRANSFORMATION_MODEL=openai/gpt-4o-mini
+CHAT_TTS_MODEL=tts-1
+CHAT_TTS_VOICE=alloy
 ```
 
 ### Run Development Server
@@ -58,25 +63,6 @@ Run the SQL scripts in order in your Supabase SQL Editor:
 1. `scripts/setup-db.sql` — creates all tables
 2. `scripts/rls.sql` — sets up Row Level Security policies
 
----
-
-<<<<<<< Gowreesh
-## LaTeX Deployment (Vercel + Render)
-
-Resume PDF compile/preview can run in hybrid mode:
-- App/UI/auth APIs on Vercel
-- LaTeX compile worker endpoint on Render
-
-### Environment variables
-
-Add these to Vercel and Render as needed:
-
-```env
-# Optional local override for compiler path when compiling locally
-LATEX_BIN=/Library/TeX/texbin/pdflatex
-
-# If set, resume compile/preview routes offload LaTeX compilation to this base URL
-=======
 ## Resume LaTeX Preview/Download Setup
 
 Resume PDF endpoints:
@@ -107,7 +93,6 @@ LATEX_BIN_PDFLATEX=/Library/TeX/texbin/pdflatex
 LATEX_BIN_XELATEX=/Library/TeX/texbin/xelatex
 
 # If set, resume compile/preview routes offload compilation to Render
->>>>>>> main
 # Example: https://campus-flow-render.onrender.com
 LATEX_RENDER_URL=
 
@@ -115,19 +100,6 @@ LATEX_RENDER_URL=
 # Defaults to {LATEX_RENDER_URL}/api/latex/compile
 LATEX_RENDER_COMPILE_URL=
 
-<<<<<<< Gowreesh
-# Shared secret between Vercel and Render compile endpoint
-LATEX_RENDER_SECRET=
-```
-
-### Side-by-side setup
-
-1. Deploy app to Render with TeX installed (`pdflatex` available).
-2. Keep `/api/latex/compile` reachable on Render.
-3. Set `LATEX_RENDER_SECRET` on both deployments.
-4. Set `LATEX_RENDER_URL` on Vercel to the Render deployment URL.
-5. Do **not** set `LATEX_RENDER_URL` on Render itself (so Render compiles locally and avoids proxy loops).
-=======
 # Shared secret between app and compile endpoint
 LATEX_RENDER_SECRET=
 ```
@@ -165,7 +137,69 @@ Steps:
 
 - `Failed to compile LaTeX`
   - Usually template syntax/package/font issue. Check API error `detail` field.
->>>>>>> main
+
+---
+
+## PDF Chat + Studio (Slides, Voice, Video)
+
+`/dashboard/chat` now has:
+- `Chat` tab: ask questions from selected PDF
+- `Create` tab: generate from selected PDF:
+  - `Slides` (markdown slide deck)
+  - `Voice` (podcast script + mp3)
+  - `Video Plan` (scene-by-scene storyboard markdown)
+
+### Requirements
+
+1. PDF must be uploaded and indexed into `embeddings` for the selected `pdf_id`.
+2. `OPENAI_API_KEY` must be set for voice generation (TTS).
+3. Optional model envs:
+   - `CHAT_TRANSFORMATION_MODEL` (default: `openai/gpt-4o-mini`)
+   - `CHAT_TTS_MODEL` (default: `tts-1`)
+   - `CHAT_TTS_VOICE` (default: `alloy`)
+
+### API
+
+- `POST /api/chat` -> PDF Q&A
+- `POST /api/chat/generate` -> `{ type: "slides" | "voice" | "video", pdfId, prompt }`
+
+### Multi-provider model selection (Create tab)
+
+In `/dashboard/chat` -> `Create`, you can set a model in `provider/model` format, e.g.:
+- `openai/gpt-4o-mini`
+- `anthropic/claude-3-5-sonnet-latest`
+- `google/gemini-2.0-flash`
+- `groq/llama-3.1-70b-versatile`
+- `ollama/qwen2.5`
+
+Voice output currently uses OpenAI TTS for mp3 synthesis after script generation.
+
+---
+
+## Open Notebook (Embedded in Campus Flow)
+
+Open Notebook can run inside Campus Flow at `/dashboard/notebook` using rewrite proxies.
+
+### Docker (local)
+
+Open Notebook UI should be reachable at:
+- `http://localhost:8502`
+
+Open Notebook API should be reachable at:
+- `http://localhost:5055`
+
+### Optional environment overrides
+
+```env
+OPEN_NOTEBOOK_URL=http://localhost:8502
+OPEN_NOTEBOOK_API_URL=http://localhost:5055
+```
+
+These values are used by:
+- health endpoint: `GET /api/open-notebook/health`
+- Next.js rewrites:
+  - `/open-notebook/:path*` -> Open Notebook UI
+  - `/open-notebook-api/:path*` -> Open Notebook API
 
 ---
 

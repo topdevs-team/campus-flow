@@ -2,7 +2,7 @@
 
 import { useAuth } from '@/lib/auth-context'
 import Link from 'next/link'
-import { Users, FileText, Ticket, FileCheck, ArrowRight, ArrowUpRight, Building2 } from 'lucide-react'
+import { Users, FileText, Ticket, FileCheck, MessageSquare, ArrowRight, Building2, NotebookText } from 'lucide-react'
 
 function getGreeting() {
   const h = new Date().getHours()
@@ -35,24 +35,31 @@ const features = [
   },
   {
     title: 'Support Tickets',
-    description: 'Submit campus support requests and track their status — housing, facilities, admin.',
+    description: 'Submit and track issues with campus support',
     icon: Ticket,
     href: '/dashboard/admin',
-    tag: 'Support',
+    color: 'bg-orange-50 text-orange-600',
   },
   {
-    title: 'Resume Builder',
-    description: 'Build a clean LaTeX resume step-by-step and export a polished PDF in one click.',
+    title: 'Resume Maker',
+    description: 'Build and download your professional resume',
     icon: FileCheck,
     href: '/dashboard/resume',
-    tag: 'Career',
+    color: 'bg-primary/10 text-primary',
   },
   {
     title: 'Club Recruitments',
-    description: 'Track all active club openings, deadlines, and application forms in one place.',
+    description: 'Track all active club openings, deadlines, and application forms',
     icon: Building2,
     href: '/dashboard/clubs',
-    tag: 'Campus',
+    color: 'bg-primary/10 text-primary',
+  },
+  {
+    title: 'Open Notebook',
+    description: 'Launch your local multi-model notebook workspace',
+    icon: NotebookText,
+    href: '/dashboard/notebook',
+    color: 'bg-primary/10 text-primary',
   },
 ]
 
