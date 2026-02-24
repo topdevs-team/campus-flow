@@ -1,11 +1,10 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/lib/auth-context'
 import { supabase } from '@/lib/supabase'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
+import { toast } from 'sonner'
+import { FileText, Loader2, Plus, Users, User, Trash2, ExternalLink, X, Upload } from 'lucide-react'
 import {
   Select,
   SelectContent,
@@ -13,9 +12,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { toast } from 'sonner'
-import { FileText, Upload, Trash2, Loader2, Plus, Users, User } from 'lucide-react'
 
 interface Note {
   id: string
@@ -298,249 +294,266 @@ export default function NotesPage() {
 
   if (loading) {
     return (
-      <div className="flex-1 p-8 flex items-center justify-center">
-        <Loader2 className="animate-spin" />
+      <div className="flex-1 flex items-center justify-center min-h-[60vh]">
+        <div className="flex items-center gap-2 text-zinc-400">
+          <Loader2 size={16} className="animate-spin" />
+          <span className="text-sm font-medium">Loading notesâ€¦</span>
+        </div>
       </div>
     )
   }
 
   const renderNoteCard = (note: Note) => (
-    <Card key={note.id}>
-      <CardHeader>
-        <div className="flex items-start justify-between">
-          <div>
-            <CardTitle className="text-lg">{note.title}</CardTitle>
-            <CardDescription>{note.course}</CardDescription>
+    <div key={note.id} className="group flex flex-col gap-3 border border-zinc-200 rounded-xl p-5 bg-white hover:border-zinc-400 hover:shadow-sm transition-all">
+      {/* Top row */}
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex items-center gap-2.5">
+          <div className="w-9 h-9 bg-zinc-100 rounded-lg flex items-center justify-center shrink-0">
+            <FileText size={15} className="text-zinc-500" />
           </div>
-          <FileText className="text-green-600" />
+          <div>
+            <p className="text-sm font-bold text-black leading-tight">{note.title}</p>
+            {note.course && (
+              <span className="inline-block mt-0.5 text-[10px] font-black uppercase tracking-widest text-zinc-400 bg-zinc-100 px-2 py-0.5 rounded-full">
+                {note.course}
+              </span>
+            )}
+          </div>
         </div>
-      </CardHeader>
-      <CardContent>
-        {note.uploader_name && (
-          <p className="text-xs text-slate-400 mb-1 flex items-center gap-1">
-            <User size={11} /> Shared by: {note.uploader_name}
-          </p>
+        {note.user_id === user?.id && (
+          <button
+            onClick={() => deleteNote(note.id)}
+            className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-lg text-zinc-300 hover:text-red-500 hover:bg-red-50"
+          >
+            <Trash2 size={13} />
+          </button>
         )}
-        <p className="text-xs text-slate-500 mb-4">
-          {new Date(note.created_at).toLocaleDateString()}
-        </p>
-        <div className="flex gap-2">
-          {note.pdf_url ? (
-            <Button
-              variant="outline"
-              size="sm"
-              className="flex-1"
-              onClick={() => window.open(note.pdf_url, '_blank')}
-            >
-              View PDF
-            </Button>
-          ) : (
-            <Button
-              variant="outline"
-              size="sm"
-              className="flex-1"
-              onClick={() => window.open(`/dashboard/notes/${note.id}`, '_blank')}
-            >
-              View
-            </Button>
-          )}
-          {note.user_id === user?.id && (
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={() => deleteNote(note.id)}
-            >
-              <Trash2 size={16} />
-            </Button>
-          )}
-        </div>
-      </CardContent>
-    </Card>
+      </div>
+
+      {/* Meta */}
+      <div className="flex items-center gap-3 text-[11px] text-zinc-400 font-medium">
+        {note.uploader_name && (
+          <span className="flex items-center gap-1">
+            <User size={10} /> {note.uploader_name}
+          </span>
+        )}
+        <span>{new Date(note.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+      </div>
+
+      {/* View button */}
+      <button
+        onClick={() => window.open(note.pdf_url || `/dashboard/notes/${note.id}`, '_blank')}
+        className="flex items-center justify-center gap-1.5 w-full py-2 text-xs font-bold border border-zinc-200 rounded-lg text-zinc-600 hover:bg-black hover:text-white hover:border-black transition-all"
+      >
+        <ExternalLink size={11} /> View PDF
+      </button>
+    </div>
   )
 
   const filteredCommunityNotes = communityNotes
 
   return (
-    <div className="flex-1 p-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900 mb-2">Notes</h1>
-        <p className="text-slate-600">Upload, organize, and discover class notes shared by others</p>
-      </div>
+    <div className="min-h-screen bg-white px-6 py-10">
+      <div className="max-w-5xl mx-auto">
 
-      <div className="flex flex-wrap gap-4 mb-6 items-end">
-        <Button onClick={() => setShowForm(!showForm)} className="gap-2">
-          <Plus size={18} />
-          Upload Note
-        </Button>
-
-        {/* Filter by Course Code */}
-        <div className="flex flex-col gap-1">
-          <span className="text-sm font-medium text-slate-700">Filter by Course code</span>
-          <Select value={filterCode} onValueChange={setFilterCode}>
-            <SelectTrigger className="w-48">
-              <SelectValue placeholder="Select Title" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Codes</SelectItem>
-              {COURSE_CODES.map((code) => (
-                <SelectItem key={code} value={code}>
-                  {code}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Filter by Course Name */}
-        <div className="flex flex-col gap-1">
-          <span className="text-sm font-medium text-slate-700">Filter by course name</span>
-          <Select value={filterName} onValueChange={setFilterName}>
-            <SelectTrigger className="w-64">
-              <SelectValue placeholder="Select course name..." />
-            </SelectTrigger>
-            <SelectContent>
-              {COURSE_NAMES.map((name) => (
-                <SelectItem key={name} value={name}>
-                  {name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Reset filters */}
-        {(filterCode !== 'all' || filterName !== 'All') && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => { setFilterCode('all'); setFilterName('All') }}
+        {/* â”€â”€ Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        <div className="flex items-start justify-between gap-4 mb-8">
+          <div>
+            <h1 className="text-3xl font-black tracking-tight text-black">Notes</h1>
+            <p className="text-sm text-zinc-400 mt-1">Upload, organise, and discover class notes shared by others.</p>
+          </div>
+          <button
+            onClick={() => setShowForm(!showForm)}
+            className={`flex items-center gap-2 px-4 py-2.5 text-sm font-bold rounded-xl transition-all ${
+              showForm ? 'bg-zinc-100 text-zinc-600' : 'bg-black text-white hover:bg-zinc-800'
+            }`}
           >
-            Reset Filters
-          </Button>
-        )}
-      </div>
+            {showForm ? <X size={14} /> : <Plus size={14} />}
+            {showForm ? 'Cancel' : 'Upload Note'}
+          </button>
+        </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="mb-6">
-          <TabsTrigger value="my-notes" className="gap-2">
-            <User size={15} /> My Notes
-          </TabsTrigger>
-          <TabsTrigger value="community" className="gap-2">
-            <Users size={15} /> Community Notes
-          </TabsTrigger>
-        </TabsList>
-
-      {showForm && (
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle>Upload a Note</CardTitle>
-            <CardDescription>Add a new PDF note to your collection</CardDescription>
-          </CardHeader>
-          <CardContent>
+        {/* â”€â”€ Upload form (inline slide-in) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        {showForm && (
+          <div className="mb-8 border border-zinc-200 rounded-2xl p-6 bg-zinc-50">
+            <h2 className="text-sm font-black uppercase tracking-widest text-zinc-500 mb-5">New Note</h2>
             <form onSubmit={handleUpload} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">Course Name</label>
-                <Select value={title} onValueChange={setTitle} required>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select course name..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {COURSE_NAMES.filter((n) => n !== 'All').map((name) => (
-                      <SelectItem key={name} value={name}>
-                        {name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-black uppercase tracking-widest text-zinc-400">Course Name</label>
+                  <Select value={title} onValueChange={setTitle} required>
+                    <SelectTrigger className="bg-white border-zinc-200 text-sm">
+                      <SelectValue placeholder="Select courseâ€¦" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {COURSE_NAMES.filter((n) => n !== 'All').map((name) => (
+                        <SelectItem key={name} value={name}>{name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-black uppercase tracking-widest text-zinc-400">Course Code</label>
+                  <Select value={course} onValueChange={setCourse}>
+                    <SelectTrigger className="bg-white border-zinc-200 text-sm">
+                      <SelectValue placeholder="Select codeâ€¦" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {COURSE_CODES.map((code) => (
+                        <SelectItem key={code} value={code}>{code}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">Course Code</label>
-                <Select value={course} onValueChange={setCourse}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select course code..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {COURSE_CODES.map((code) => (
-                      <SelectItem key={code} value={code}>
-                        {code}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-black uppercase tracking-widest text-zinc-400">PDF File</label>
+                <label className="flex items-center gap-3 cursor-pointer border-2 border-dashed border-zinc-200 rounded-xl px-4 py-4 bg-white hover:border-zinc-400 transition-colors">
+                  <Upload size={16} className="text-zinc-400 shrink-0" />
+                  <span className="text-sm text-zinc-500 truncate">
+                    {file ? file.name : 'Click to select a PDFâ€¦'}
+                  </span>
+                  <input
+                    type="file"
+                    accept=".pdf"
+                    className="hidden"
+                    onChange={(e) => setFile(e.target.files?.[0] || null)}
+                    required
+                  />
+                </label>
               </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">PDF File</label>
-                <input
-                  type="file"
-                  accept=".pdf"
-                  onChange={(e) => setFile(e.target.files?.[0] || null)}
-                  required
-                  className="w-full px-3 py-2 border border-slate-300 rounded-md"
-                />
-              </div>
-              <div className="flex gap-2">
-                <Button type="submit" disabled={uploading}>
-                  {uploading ? 'Uploading...' : 'Upload'}
-                </Button>
-                <Button
+
+              <div className="flex gap-2 pt-1">
+                <button
+                  type="submit"
+                  disabled={uploading}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-black text-white text-sm font-bold rounded-xl hover:bg-zinc-800 transition-all disabled:opacity-50"
+                >
+                  {uploading ? <><Loader2 size={13} className="animate-spin" /> Uploadingâ€¦</> : <><Upload size={13} /> Upload</>}
+                </button>
+                <button
                   type="button"
-                  variant="outline"
                   onClick={() => setShowForm(false)}
+                  className="px-5 py-2.5 text-sm font-bold border border-zinc-200 rounded-xl text-zinc-600 hover:bg-zinc-50 transition-all"
                 >
                   Cancel
-                </Button>
+                </button>
               </div>
             </form>
-          </CardContent>
-        </Card>
-      )}
-
-        {/* My Notes Tab */}
-        <TabsContent value="my-notes">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredNotes.map((note) => renderNoteCard(note))}
           </div>
-          {filteredNotes.length === 0 && (
-            <Card className="text-center py-12">
-              <CardContent className="pt-6">
-                <Upload size={48} className="mx-auto mb-4 text-slate-400" />
-                <p className="text-slate-600">
-                  {notes.length === 0
-                    ? 'No notes yet. Upload your first note to get started!'
-                    : 'No notes match the selected filters.'}
-                </p>
-              </CardContent>
-            </Card>
-          )}
-        </TabsContent>
+        )}
 
-        {/* Community Notes Tab */}
-        <TabsContent value="community">
-          {communityLoading ? (
-            <div className="flex items-center justify-center py-16">
-              <Loader2 className="animate-spin" />
-            </div>
-          ) : (
-            <>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* â”€â”€ Filters â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        <div className="flex flex-wrap items-end gap-3 mb-6">
+          <div className="space-y-1">
+            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Course Code</label>
+            <Select value={filterCode} onValueChange={setFilterCode}>
+              <SelectTrigger className="w-40 h-9 text-xs font-semibold bg-white border-zinc-200">
+                <SelectValue placeholder="All Codes" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Codes</SelectItem>
+                {COURSE_CODES.map((code) => (
+                  <SelectItem key={code} value={code}>{code}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1">
+            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Course Name</label>
+            <Select value={filterName} onValueChange={setFilterName}>
+              <SelectTrigger className="w-52 h-9 text-xs font-semibold bg-white border-zinc-200">
+                <SelectValue placeholder="All" />
+              </SelectTrigger>
+              <SelectContent>
+                {COURSE_NAMES.map((name) => (
+                  <SelectItem key={name} value={name}>{name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          {(filterCode !== 'all' || filterName !== 'All') && (
+            <button
+              onClick={() => { setFilterCode('all'); setFilterName('All') }}
+              className="h-9 mt-auto px-3 text-xs font-bold border border-zinc-200 rounded-lg text-zinc-500 hover:bg-zinc-50 hover:text-black transition-all"
+            >
+              Reset
+            </button>
+          )}
+        </div>
+
+        {/* â”€â”€ Tab switcher â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        <div className="flex gap-0 border-b border-zinc-200 mb-8">
+          {[
+            { id: 'my-notes', label: 'My Notes', icon: User },
+            { id: 'community', label: 'Community Notes', icon: Users },
+          ].map(({ id, label, icon: Icon }) => (
+            <button
+              key={id}
+              onClick={() => setActiveTab(id)}
+              className={`flex items-center gap-2 px-5 py-3 text-sm font-bold border-b-2 transition-all ${
+                activeTab === id
+                  ? 'border-black text-black'
+                  : 'border-transparent text-zinc-400 hover:text-zinc-600'
+              }`}
+            >
+              <Icon size={13} /> {label}
+            </button>
+          ))}
+        </div>
+
+        {/* â”€â”€ My Notes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        {activeTab === 'my-notes' && (
+          <>
+            {filteredNotes.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {filteredNotes.map((note) => renderNoteCard(note))}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-20 border border-dashed border-zinc-200 rounded-2xl">
+                <div className="w-12 h-12 bg-zinc-100 rounded-xl flex items-center justify-center mb-4">
+                  <Upload size={20} className="text-zinc-400" />
+                </div>
+                <p className="text-sm font-bold text-zinc-500">
+                  {notes.length === 0 ? 'No notes yet' : 'No notes match filters'}
+                </p>
+                <p className="text-xs text-zinc-400 mt-1">
+                  {notes.length === 0 ? 'Upload your first note to get started.' : 'Try adjusting the filters above.'}
+                </p>
+              </div>
+            )}
+          </>
+        )}
+
+        {/* â”€â”€ Community Notes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        {activeTab === 'community' && (
+          <>
+            {communityLoading ? (
+              <div className="flex items-center justify-center py-20">
+                <Loader2 size={16} className="animate-spin text-zinc-400" />
+              </div>
+            ) : filteredCommunityNotes.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filteredCommunityNotes.map((note) => renderNoteCard(note))}
               </div>
-              {filteredCommunityNotes.length === 0 && (
-                <Card className="text-center py-12">
-                  <CardContent className="pt-6">
-                    <Users size={48} className="mx-auto mb-4 text-slate-400" />
-                    <p className="text-slate-600">
-                      {communityNotes.length === 0
-                        ? 'No notes shared by other students yet.'
-                        : 'No community notes match the selected filters.'}
-                    </p>
-                  </CardContent>
-                </Card>
-              )}
-            </>
-          )}
-        </TabsContent>
-      </Tabs>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-20 border border-dashed border-zinc-200 rounded-2xl">
+                <div className="w-12 h-12 bg-zinc-100 rounded-xl flex items-center justify-center mb-4">
+                  <Users size={20} className="text-zinc-400" />
+                </div>
+                <p className="text-sm font-bold text-zinc-500">
+                  {communityNotes.length === 0 ? 'No community notes yet' : 'No notes match filters'}
+                </p>
+                <p className="text-xs text-zinc-400 mt-1">
+                  {communityNotes.length === 0 ? 'Be the first to share notes with the community.' : 'Try adjusting the filters above.'}
+                </p>
+              </div>
+            )}
+          </>
+        )}
+
+      </div>
     </div>
   )
 }
