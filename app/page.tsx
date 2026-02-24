@@ -128,7 +128,7 @@ export default function Home() {
           <div className="relative hidden lg:block" style={{ height: '660px', marginTop: '-89px' }}>
             <CardSwap
               width={640}
-              height={500}
+              height={450}
               cardDistance={50}
               verticalDistance={60}
               delay={4000}
